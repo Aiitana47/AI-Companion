@@ -12,6 +12,11 @@ export type Screen =
   | 'family-dashboard'
   | 'family-weekly-report'
   | 'call-screen'
+  | 'music'
+  | 'activities'
+  | 'appointments'
+  | 'family-messages'
+  | 'family-settings'
 
 export type ViewMode = 'martha' | 'james'
 
@@ -49,6 +54,43 @@ export interface ToastData {
   title: string
   description?: string
   type: 'info' | 'warning' | 'medication' | 'message'
+}
+
+export interface MusicTrack {
+  id: string
+  title: string
+  artist: string
+  duration: string
+  coverEmoji: string
+  genre: string
+}
+
+export interface Appointment {
+  id: string
+  title: string
+  date: string
+  time: string
+  type: 'doctor' | 'social' | 'activity' | 'family'
+  location?: string
+  notes?: string
+}
+
+export interface ActivityItem {
+  id: string
+  title: string
+  description: string
+  emoji: string
+  category: 'physical' | 'mental' | 'social' | 'creative'
+  duration: string
+  completed: boolean
+}
+
+export interface ChatMessage {
+  id: string
+  sender: 'james' | 'system'
+  text: string
+  time: string
+  read: boolean
 }
 
 interface CompanionState {
@@ -95,6 +137,20 @@ interface CompanionState {
   // Proactive check-in banner
   showProactiveBanner: boolean
   
+  // Music
+  currentTrack: MusicTrack | null
+  isPlaying: boolean
+  musicProgress: number // 0-100
+  
+  // Appointments
+  appointments: Appointment[]
+  
+  // Activities
+  activities: ActivityItem[]
+  
+  // Chat messages
+  chatMessages: ChatMessage[]
+  
   // Actions
   setScreen: (screen: Screen) => void
   setViewMode: (mode: ViewMode) => void
@@ -115,6 +171,13 @@ interface CompanionState {
   showToast: (toast: Omit<ToastData, 'id'>) => void
   dismissToast: () => void
   setShowProactiveBanner: (show: boolean) => void
+  setCurrentTrack: (track: MusicTrack | null) => void
+  setIsPlaying: (playing: boolean) => void
+  setMusicProgress: (progress: number) => void
+  togglePlayPause: () => void
+  markActivityCompleted: (id: string) => void
+  addChatMessage: (message: Omit<ChatMessage, 'id'>) => void
+  markChatMessageRead: (id: string) => void
 }
 
 const initialMedications: Medication[] = [
@@ -144,7 +207,39 @@ const initialWeeklyReport: WeeklyReport = {
   ],
 }
 
+const initialMusicTrack: MusicTrack = {
+  id: '1',
+  title: 'Nessun Dorma',
+  artist: 'Luciano Pavarotti',
+  duration: '3:25',
+  coverEmoji: '🎭',
+  genre: 'Opera',
+}
+
+const initialAppointments: Appointment[] = [
+  { id: '1', title: 'Dr. Martinez Check-up', date: 'Tomorrow', time: '10:00', type: 'doctor', location: 'Health Centre, Room 204', notes: 'Bring blood pressure log' },
+  { id: '2', title: 'Video Call with Sarah', date: 'Thu', time: '18:00', type: 'family' },
+  { id: '3', title: 'Garden Club Meeting', date: 'Sat', time: '11:00', type: 'social', location: 'Community Hall' },
+  { id: '4', title: 'Piano Lesson', date: 'Next Mon', time: '15:00', type: 'activity', location: 'Music Room' },
+]
+
+const initialActivities: ActivityItem[] = [
+  { id: '1', title: 'Morning Stretch', description: '5-minute gentle stretching routine', emoji: '🧘', category: 'physical', duration: '5 min', completed: true },
+  { id: '2', title: 'Word Puzzle', description: 'Today\'s crossword puzzle', emoji: '🧩', category: 'mental', duration: '15 min', completed: true },
+  { id: '3', title: 'Walk in the Garden', description: 'A short walk around the garden', emoji: '🌿', category: 'physical', duration: '20 min', completed: false },
+  { id: '4', title: 'Call a Friend', description: 'Reach out to Margaret', emoji: '📞', category: 'social', duration: '10 min', completed: false },
+  { id: '5', title: 'Painting', description: 'Watercolour painting session', emoji: '🎨', category: 'creative', duration: '30 min', completed: false },
+  { id: '6', title: 'Memory Game', description: 'Match the pairs card game', emoji: '🃏', category: 'mental', duration: '10 min', completed: false },
+]
+
+const initialChatMessages: ChatMessage[] = [
+  { id: '1', sender: 'james', text: 'Hi Mum! How was your walk today?', time: '17:02', read: true },
+  { id: '2', sender: 'system', text: 'Martha had a lovely walk in the garden this afternoon.', time: '17:02', read: true },
+  { id: '3', sender: 'james', text: 'That\'s wonderful! I\'ll call you later tonight. Love you! 💛', time: '17:05', read: false },
+]
+
 let toastIdCounter = 0
+let chatIdCounter = initialChatMessages.length
 
 export const useCompanionStore = create<CompanionState>((set, get) => ({
   // Navigation
@@ -187,6 +282,20 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   
   // Proactive banner
   showProactiveBanner: false,
+  
+  // Music
+  currentTrack: initialMusicTrack,
+  isPlaying: false,
+  musicProgress: 0,
+  
+  // Appointments
+  appointments: initialAppointments,
+  
+  // Activities
+  activities: initialActivities,
+  
+  // Chat messages
+  chatMessages: initialChatMessages,
   
   // Actions
   setScreen: (screen) => set((state) => {
@@ -257,11 +366,29 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   dismissToast: () => set({ toast: null }),
   
   setShowProactiveBanner: (show) => set({ showProactiveBanner: show }),
+  
+  setCurrentTrack: (track) => set({ currentTrack: track, musicProgress: 0 }),
+  setIsPlaying: (playing) => set({ isPlaying: playing }),
+  setMusicProgress: (progress) => set({ musicProgress: progress }),
+  togglePlayPause: () => set((state) => ({ isPlaying: !state.isPlaying })),
+  markActivityCompleted: (id) => set((state) => ({
+    activities: state.activities.map(a => 
+      a.id === id ? { ...a, completed: true } : a
+    )
+  })),
+  addChatMessage: (message) => set((state) => ({
+    chatMessages: [...state.chatMessages, { ...message, id: String(++chatIdCounter) }]
+  })),
+  markChatMessageRead: (id) => set((state) => ({
+    chatMessages: state.chatMessages.map(m => 
+      m.id === id ? { ...m, read: true } : m
+    )
+  })),
 }))
 
 // Helper to determine navigation direction for animations
 function getNavigationDirection(_from: Screen, to: Screen): 'forward' | 'backward' {
-  const forwardScreens: Screen[] = ['menu', 'mood-checkin', 'medication-reminder', 'proactive-suggestion', 'profile', 'alerts', 'emergency', 'call-screen', 'family-weekly-report']
+  const forwardScreens: Screen[] = ['menu', 'mood-checkin', 'medication-reminder', 'proactive-suggestion', 'profile', 'alerts', 'emergency', 'call-screen', 'family-weekly-report', 'music', 'activities', 'appointments', 'family-messages', 'family-settings']
   if (forwardScreens.includes(to)) return 'forward'
   return 'backward'
 }

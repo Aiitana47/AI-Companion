@@ -77,14 +77,14 @@ export default function FamilyDashboard() {
   }
 
   const handleMessage = () => {
-    // Placeholder
+    setScreen('family-messages')
   }
 
   const bottomTabs = [
-    { icon: Home, label: 'Home', active: true, onClick: () => {} },
+    { icon: Home, label: 'Home', active: true, onClick: () => setScreen('family-dashboard') },
     { icon: Bell, label: 'Alerts', active: false, onClick: () => setScreen('alerts') },
     { icon: BarChart3, label: 'Report', active: false, onClick: () => setScreen('family-weekly-report') },
-    { icon: Settings, label: 'Settings', active: false, onClick: () => {} },
+    { icon: Settings, label: 'Settings', active: false, onClick: () => setScreen('family-settings') },
   ]
 
   return (

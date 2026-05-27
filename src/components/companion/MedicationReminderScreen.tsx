@@ -1,7 +1,7 @@
 'use client'
 
 import { useCompanionStore } from '@/lib/companion-store'
-import { ArrowLeft, Check, Mic, MapPin } from 'lucide-react'
+import { ArrowLeft, Check, Mic, MapPin, Clock, Pill } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function MedicationReminderScreen() {
@@ -32,8 +32,17 @@ export default function MedicationReminderScreen() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--border)] mb-6"
+          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+          className="bg-white rounded-2xl p-6 shadow-md border-2 border-[var(--sage)]/30 mb-6 relative overflow-hidden"
         >
+          {/* Decorative accent */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--sage)] to-[var(--sage-dark)]" />
+          
+          <div className="flex items-center gap-2 mb-3">
+            <Pill size={18} className="text-[var(--sage)]" />
+            <span className="text-xs font-semibold text-[var(--sage)] uppercase tracking-wide">Next Medication</span>
+          </div>
+
           <p className="text-5xl font-bold text-[var(--sage)] text-center mb-2">
             {nextMedication.time}
           </p>
@@ -47,7 +56,7 @@ export default function MedicationReminderScreen() {
           {/* Done button with voice indicator */}
           <motion.button
             onClick={() => handleMarkDone(nextMedication.id)}
-            className="w-full py-4 rounded-2xl bg-[var(--sage)] hover:bg-[var(--sage-dark)] text-white font-bold text-xl flex items-center justify-center gap-3 transition-colors"
+            className="w-full py-4 rounded-2xl bg-[var(--sage)] hover:bg-[var(--sage-dark)] text-white font-bold text-xl flex items-center justify-center gap-3 transition-colors shadow-md"
             whileTap={{ scale: 0.95 }}
             aria-label="Mark medication as taken"
           >
@@ -67,31 +76,52 @@ export default function MedicationReminderScreen() {
         </motion.div>
       )}
 
+      {/* All taken message */}
+      {!nextMedication && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-[var(--sage)]/10 rounded-2xl p-6 text-center mb-6 border border-[var(--sage)]/20"
+        >
+          <span className="text-5xl block mb-3">🎉</span>
+          <p className="text-xl font-bold text-[var(--sage-dark)]">All done!</p>
+          <p className="text-base text-[var(--muted-foreground)] mt-1">You&apos;ve taken all your medications today</p>
+        </motion.div>
+      )}
+
       {/* All medications list */}
       <div className="flex-1">
-        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">
-          Today&apos;s Medications ({takenCount}/{medications.length})
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-[var(--foreground)]">
+            Today&apos;s Medications
+          </h3>
+          <span className="text-sm text-[var(--sage)] font-medium">
+            {takenCount}/{medications.length}
+          </span>
+        </div>
         <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
-          {medications.map((med) => (
-            <div
+          {medications.map((med, index) => (
+            <motion.div
               key={med.id}
-              className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
                 med.taken
-                  ? 'bg-[var(--sage-light)]/20'
+                  ? 'bg-[var(--sage)]/5 opacity-60'
                   : med.id === nextMedication?.id
-                  ? 'bg-white border border-[var(--sage)]'
+                  ? 'bg-white border-2 border-[var(--sage)]/30 shadow-sm'
                   : 'bg-white border border-[var(--border)]'
               }`}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                   med.taken
                     ? 'bg-[var(--sage)] text-white'
                     : 'bg-[var(--cream-dark)] text-[var(--muted-foreground)]'
                 }`}
               >
-                {med.taken ? <Check size={16} /> : <span className="text-xs font-bold">{med.time}</span>}
+                {med.taken ? <Check size={16} /> : <Clock size={14} />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`text-base font-medium ${med.taken ? 'line-through text-[var(--muted-foreground)]' : 'text-[var(--foreground)]'}`}>
@@ -99,8 +129,8 @@ export default function MedicationReminderScreen() {
                 </p>
                 <p className="text-sm text-[var(--muted-foreground)]">{med.dosage}</p>
               </div>
-              <span className="text-sm text-[var(--muted-foreground)]">{med.time}</span>
-            </div>
+              <span className="text-sm text-[var(--muted-foreground)] font-mono">{med.time}</span>
+            </motion.div>
           ))}
         </div>
       </div>

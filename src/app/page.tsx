@@ -4,12 +4,16 @@ import { useCompanionStore, type ViewMode } from '@/lib/companion-store'
 import SmartDisplayFrame from '@/components/companion/SmartDisplayFrame'
 import FamilyDashboard from '@/components/companion/FamilyDashboard'
 import FamilyWeeklyReport from '@/components/companion/FamilyWeeklyReport'
+import FamilyMessagesScreen from '@/components/companion/FamilyMessagesScreen'
+import FamilySettingsScreen from '@/components/companion/FamilySettingsScreen'
 import { Monitor, Smartphone, Heart } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const familyScreens: Record<string, React.ComponentType> = {
   'family-dashboard': FamilyDashboard,
   'family-weekly-report': FamilyWeeklyReport,
+  'family-messages': FamilyMessagesScreen,
+  'family-settings': FamilySettingsScreen,
   'alerts': FamilyDashboard,
   'call-screen': FamilyDashboard,
 }

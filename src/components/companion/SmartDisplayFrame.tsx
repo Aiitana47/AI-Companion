@@ -1,8 +1,9 @@
 'use client'
 
 import { useCompanionStore, type Screen } from '@/lib/companion-store'
-import { Menu, User, Bell, Home, Cloud, Sun, CloudRain } from 'lucide-react'
+import { Menu, User, Bell, Home, Cloud, Sun, CloudRain, Music } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import HomeScreen from './HomeScreen'
 import MoodCheckinScreen from './MoodCheckinScreen'
 import MedicationReminderScreen from './MedicationReminderScreen'
@@ -12,6 +13,9 @@ import ProfileScreen from './ProfileScreen'
 import AlertsScreen from './AlertsScreen'
 import EmergencyScreen from './EmergencyScreen'
 import CallScreen from './CallScreen'
+import MusicScreen from './MusicScreen'
+import ActivitiesScreen from './ActivitiesScreen'
+import AppointmentsScreen from './AppointmentsScreen'
 import CompanionToast from './CompanionToast'
 
 const screenComponents: Record<Screen, React.ComponentType> = {
@@ -26,6 +30,11 @@ const screenComponents: Record<Screen, React.ComponentType> = {
   'family-dashboard': HomeScreen,
   'family-weekly-report': HomeScreen,
   'call-screen': CallScreen,
+  'music': MusicScreen,
+  'activities': ActivitiesScreen,
+  'appointments': AppointmentsScreen,
+  'family-messages': HomeScreen,
+  'family-settings': HomeScreen,
 }
 
 // Mock weather data
@@ -36,7 +45,21 @@ const weatherInfo = {
 }
 
 export default function SmartDisplayFrame() {
-  const { currentScreen, currentTime, currentDate, setScreen, isEmergencyActive, alerts, viewMode, navigationDirection } = useCompanionStore()
+  const { currentScreen, setScreen, isEmergencyActive, alerts, viewMode, navigationDirection, isPlaying, currentTrack } = useCompanionStore()
+
+  // Real-time clock
+  const [time, setTime] = useState(() => {
+    const now = new Date()
+    return { time: now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), date: now.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) }
+  })
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date()
+      setTime({ time: now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), date: now.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) })
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   const CurrentScreenComponent = screenComponents[currentScreen] || HomeScreen
 
@@ -96,17 +119,27 @@ export default function SmartDisplayFrame() {
           <div className="rounded-2xl bg-[var(--cream)] overflow-hidden flex flex-col" style={{ height: '640px' }}>
             {/* Status bar */}
             <div className="flex-shrink-0 flex items-center justify-between px-5 py-2 bg-[var(--cream-dark)]/60 border-b border-[var(--border)]/50">
-              <span className="text-sm font-medium text-[var(--foreground)]">{currentTime}</span>
+              <span className="text-sm font-medium text-[var(--foreground)]">{time.time}</span>
               <div className="flex items-center gap-3">
                 {/* Weather icon and temperature */}
                 <div className="flex items-center gap-1">
                   <WeatherIcon size={14} className="text-[var(--warm-orange)]" />
                   <span className="text-xs text-[var(--muted-foreground)]">{weatherInfo.temp}</span>
                 </div>
-                {viewMode === 'martha' && (
+                {/* Mini music indicator */}
+                {isPlaying && currentTrack && (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setScreen('music') }}
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[var(--sage)]/15 hover:bg-[var(--sage)]/25 transition-colors"
+                  >
+                    <Music size={10} className="text-[var(--sage)]" />
+                    <span className="text-[9px] font-medium text-[var(--sage-dark)]">{currentTrack.title}</span>
+                  </button>
+                )}
+                {viewMode === 'martha' && !isPlaying && (
                   <span className="text-xs text-[var(--sage)] font-medium">●</span>
                 )}
-                <span className="text-sm text-[var(--muted-foreground)]">{currentDate}</span>
+                <span className="text-sm text-[var(--muted-foreground)]">{time.date}</span>
               </div>
             </div>
 
