@@ -17,6 +17,10 @@ import {
   Info,
   ShieldAlert,
   TrendingUp,
+  MapPin,
+  Clock,
+  Check,
+  Music,
 } from 'lucide-react'
 import { useCompanionStore, type Alert } from '@/lib/companion-store'
 
@@ -49,6 +53,15 @@ const alertTypeConfig: Record<Alert['type'], { color: string; icon: React.ReactN
   },
 }
 
+const dailyTimeline = [
+  { time: '06:00', label: 'Woke up', icon: Moon, color: 'text-sage-dark', done: true },
+  { time: '09:00', label: 'Morning medication', icon: Activity, color: 'text-warm-orange', done: true },
+  { time: '12:00', label: 'Went for a walk', icon: Home, color: 'text-sage', done: true },
+  { time: '15:00', label: 'Returned home', icon: MapPin, color: 'text-sage', done: true },
+  { time: '17:00', label: 'Called James (video)', icon: Video, color: 'text-warm-orange', done: true },
+  { time: 'Now', label: 'Listening to music', icon: Music, color: 'text-sage', done: false },
+]
+
 export default function FamilyDashboard() {
   const { mood, alerts, weeklyReport, setScreen, startCall } = useCompanionStore()
 
@@ -64,7 +77,7 @@ export default function FamilyDashboard() {
   }
 
   const handleMessage = () => {
-    // For now, just a placeholder action
+    // Placeholder
   }
 
   const bottomTabs = [
@@ -129,11 +142,96 @@ export default function FamilyDashboard() {
           </div>
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* Location Map Placeholder */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          className="bg-white rounded-2xl p-4 shadow-sm border border-cream-dark"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="w-4 h-4 text-sage" />
+            <span className="text-sm font-semibold text-foreground">Location</span>
+          </div>
+          <div className="rounded-xl overflow-hidden relative" style={{
+            background: 'linear-gradient(135deg, #E8F5E8 0%, #D4E8D4 50%, #C8DEC8 100%)',
+            height: '100px',
+          }}>
+            {/* Simple map illustration */}
+            <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 400 100">
+              <path d="M0,50 Q50,30 100,50 T200,50 T300,50 T400,50" stroke="#8FAE8B" fill="none" strokeWidth="2" />
+              <path d="M0,70 Q50,50 100,70 T200,70 T300,70 T400,70" stroke="#6B8C68" fill="none" strokeWidth="1.5" />
+              <rect x="150" y="20" width="30" height="25" rx="3" fill="#8FAE8B" opacity="0.5" />
+              <rect x="200" y="35" width="25" height="20" rx="3" fill="#8FAE8B" opacity="0.4" />
+              <rect x="100" y="40" width="20" height="15" rx="2" fill="#8FAE8B" opacity="0.3" />
+            </svg>
+            {/* Pin */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+              <div className="w-6 h-6 rounded-full bg-[var(--sage)] flex items-center justify-center shadow-md">
+                <Home className="w-3 h-3 text-white" />
+              </div>
+              <div className="w-2 h-2 bg-[var(--sage)] rotate-45 -mt-1" />
+            </div>
+            <div className="absolute bottom-2 left-3 bg-white/90 rounded-lg px-2.5 py-1 shadow-sm">
+              <p className="text-[11px] font-medium text-foreground">At home - Living Room</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Daily Timeline */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+        >
+          <h2 className="text-sm font-semibold text-foreground mb-3">Daily Timeline</h2>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-cream-dark">
+            <div className="space-y-0">
+              {dailyTimeline.map((item, index) => {
+                const Icon = item.icon
+                const isLast = index === dailyTimeline.length - 1
+                return (
+                  <div key={item.time} className="flex items-start gap-3">
+                    {/* Timeline line */}
+                    <div className="flex flex-col items-center">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        item.done ? 'bg-sage/15' : 'bg-warm-orange/15'
+                      }`}>
+                        {item.done ? (
+                          <Check className="w-3.5 h-3.5 text-sage" />
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-warm-orange animate-pulse" />
+                        )}
+                      </div>
+                      {!isLast && (
+                        <div className="w-px h-6 bg-cream-dark" />
+                      )}
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 flex items-center justify-between pb-3">
+                      <div className="flex items-center gap-2">
+                        <Icon className={`w-4 h-4 ${item.color}`} />
+                        <span className={`text-sm ${item.done ? 'text-foreground font-medium' : 'text-warm-orange font-semibold'}`}>
+                          {item.label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-[11px] text-muted-foreground">{item.time}</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
         >
           <h2 className="text-sm font-semibold text-foreground mb-3">Quick Actions</h2>
           <div className="grid grid-cols-3 gap-3">

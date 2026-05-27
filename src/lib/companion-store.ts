@@ -44,11 +44,19 @@ export interface WeeklyReport {
   recommendations: string[]
 }
 
+export interface ToastData {
+  id: string
+  title: string
+  description?: string
+  type: 'info' | 'warning' | 'medication' | 'message'
+}
+
 interface CompanionState {
   // Navigation
   currentScreen: Screen
   viewMode: ViewMode
   previousScreen: Screen | null
+  navigationDirection: 'forward' | 'backward' | null
   
   // Martha's state
   userName: string
@@ -58,6 +66,11 @@ interface CompanionState {
   isListening: boolean
   isSpeaking: boolean
   aiMessage: string
+  aiChatMessage: string | null
+  aiChatVisible: boolean
+  
+  // Mic/AI chat state
+  micState: 'idle' | 'listening' | 'processing'
   
   // Medications
   medications: Medication[]
@@ -76,6 +89,12 @@ interface CompanionState {
   callType: 'audio' | 'video' | null
   callWith: string
   
+  // Toast
+  toast: ToastData | null
+  
+  // Proactive check-in banner
+  showProactiveBanner: boolean
+  
   // Actions
   setScreen: (screen: Screen) => void
   setViewMode: (mode: ViewMode) => void
@@ -83,6 +102,9 @@ interface CompanionState {
   setIsListening: (listening: boolean) => void
   setIsSpeaking: (speaking: boolean) => void
   setAiMessage: (message: string) => void
+  setAiChatMessage: (message: string | null) => void
+  setAiChatVisible: (visible: boolean) => void
+  setMicState: (state: 'idle' | 'listening' | 'processing') => void
   markMedicationTaken: (id: string) => void
   markAlertRead: (id: string) => void
   activateEmergency: () => void
@@ -90,6 +112,9 @@ interface CompanionState {
   startCall: (type: 'audio' | 'video', with_: string) => void
   endCall: () => void
   goBack: () => void
+  showToast: (toast: Omit<ToastData, 'id'>) => void
+  dismissToast: () => void
+  setShowProactiveBanner: (show: boolean) => void
 }
 
 const initialMedications: Medication[] = [
@@ -119,11 +144,14 @@ const initialWeeklyReport: WeeklyReport = {
   ],
 }
 
+let toastIdCounter = 0
+
 export const useCompanionStore = create<CompanionState>((set, get) => ({
   // Navigation
   currentScreen: 'home',
   viewMode: 'martha',
   previousScreen: null,
+  navigationDirection: null,
   
   // Martha's state
   userName: 'Martha',
@@ -133,6 +161,9 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   isListening: false,
   isSpeaking: false,
   aiMessage: "Good morning, Martha. How can I help you today?",
+  aiChatMessage: null,
+  aiChatVisible: false,
+  micState: 'idle',
   
   // Medications
   medications: initialMedications,
@@ -151,11 +182,21 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   callType: null,
   callWith: '',
   
+  // Toast
+  toast: null,
+  
+  // Proactive banner
+  showProactiveBanner: false,
+  
   // Actions
-  setScreen: (screen) => set((state) => ({ 
-    previousScreen: state.currentScreen, 
-    currentScreen: screen 
-  })),
+  setScreen: (screen) => set((state) => {
+    const direction = getNavigationDirection(state.currentScreen, screen)
+    return {
+      previousScreen: state.currentScreen, 
+      currentScreen: screen,
+      navigationDirection: direction,
+    }
+  }),
   
   setViewMode: (mode) => set({ viewMode: mode }),
   
@@ -166,6 +207,12 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   setIsSpeaking: (speaking) => set({ isSpeaking: speaking }),
   
   setAiMessage: (message) => set({ aiMessage: message }),
+  
+  setAiChatMessage: (message) => set({ aiChatMessage: message }),
+  
+  setAiChatVisible: (visible) => set({ aiChatVisible: visible }),
+  
+  setMicState: (state) => set({ micState: state }),
   
   markMedicationTaken: (id) => set((state) => ({
     medications: state.medications.map(m => 
@@ -199,6 +246,22 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   
   goBack: () => set((state) => ({
     currentScreen: state.previousScreen || 'home',
-    previousScreen: null
+    previousScreen: null,
+    navigationDirection: 'backward',
   })),
+  
+  showToast: (toastData) => set({
+    toast: { ...toastData, id: String(++toastIdCounter) }
+  }),
+  
+  dismissToast: () => set({ toast: null }),
+  
+  setShowProactiveBanner: (show) => set({ showProactiveBanner: show }),
 }))
+
+// Helper to determine navigation direction for animations
+function getNavigationDirection(_from: Screen, to: Screen): 'forward' | 'backward' {
+  const forwardScreens: Screen[] = ['menu', 'mood-checkin', 'medication-reminder', 'proactive-suggestion', 'profile', 'alerts', 'emergency', 'call-screen', 'family-weekly-report']
+  if (forwardScreens.includes(to)) return 'forward'
+  return 'backward'
+}
