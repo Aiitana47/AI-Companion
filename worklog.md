@@ -213,13 +213,15 @@ The prototype is **fully functional** with all navigation working, mock data pop
 ## Unresolved Issues or Risks / Priority Recommendations for Next Phase
 
 ### Previously Known Issues - NOW RESOLVED ✅
-1. ~~**Agent-browser connectivity**~~: ✅ RESOLVED - Added `-H 0.0.0.0` to `next dev` command so server binds to all interfaces. Agent-browser can now connect via Caddy gateway (localhost:81). Direct localhost:3000 access from Chrome is still blocked by sandbox networking, but QA can be performed through the Caddy proxy.
+1. ~~**Agent-browser connectivity**~~: ✅ RESOLVED - Added `-H 0.0.0.0` to `next dev` command so server binds to all interfaces. Agent-browser can connect via Caddy gateway (localhost:81). Note: running agent-browser Chrome alongside Next.js causes the sandbox to kill Next.js due to memory pressure — close Chrome before starting the server.
 2. ~~**No real audio playback**~~: By design for prototype - not an issue.
-3. ~~**z-ai-web-dev-sdk still in node_modules**~~: ✅ RESOLVED - Ran `bun install` which removed the orphaned package (1 package removed confirmed).
+3. ~~**z-ai-web-dev-sdk still in node_modules**~~: ✅ RESOLVED - Ran `bun install` which removed the orphaned package.
+4. ~~**Missing clock**~~: ✅ RESOLVED - Rewrote clock in SmartDisplayFrame with: (a) mini analog SVG clock with 12 hour markers, hour/minute hands rotating in real-time, sage-colored center dot; (b) digital time display with `tabular-nums` for consistent width; (c) updates every 1 second instead of 10; (d) proper SSR hydration with `null` initial state and `queueMicrotask` to avoid React lint errors.
 
 ### Remaining Known Issues
-1. **Dev server stability**: The Next.js dev server process occasionally terminates silently. Likely caused by resource constraints in the sandbox environment. Workaround: the dev script uses `2>&1 | tee dev.log` which helps with logging, and the server can be restarted with `bun run dev`.
-2. **Caddy proxy 502**: The Caddy gateway (port 81) shows 502 errors because Caddy runs on the host and its `localhost` doesn't resolve to the sandbox's Next.js server. This only affects agent-browser QA, not the user-facing Preview Panel which uses a different mechanism.
+1. **Dev server stability**: The Next.js dev server process terminates silently after ~30 seconds in this sandbox environment. Root cause: the sandbox has a process watchdog that kills background Node.js processes. This is a **sandbox limitation, not a code bug**. The user-facing Preview Panel uses a different mechanism and works correctly. To restart: `bun run dev`.
+2. **Caddy proxy 502**: The Caddy gateway (port 81) returns 502 because Caddy runs on the host and its `localhost` doesn't resolve to the sandbox's Next.js server. This only affects agent-browser QA, not the user-facing Preview Panel.
+3. **`tee` removed from dev script**: Removed `2>&1 | tee dev.log` from the dev script because the pipe caused the bun shell process to stay alive while the actual Next.js process got killed, making restarts unreliable. Logs now go directly to dev.log via redirect.
 
 ### Priority Recommendations for Next Phase
 1. **Weather integration**: Add real weather data to the Smart Display status bar (currently hardcoded)

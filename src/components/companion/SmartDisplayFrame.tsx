@@ -1,9 +1,9 @@
 'use client'
 
 import { useCompanionStore, type Screen } from '@/lib/companion-store'
-import { Menu, User, Bell, Home, Cloud, Sun, CloudRain, Music } from 'lucide-react'
+import { Menu, User, Bell, Home, Cloud, Sun, CloudRain, Music, Clock } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import HomeScreen from './HomeScreen'
 import MoodCheckinScreen from './MoodCheckinScreen'
 import MedicationReminderScreen from './MedicationReminderScreen'
@@ -53,19 +53,27 @@ const weatherInfo = {
 export default function SmartDisplayFrame() {
   const { currentScreen, setScreen, isEmergencyActive, alerts, viewMode, navigationDirection, isPlaying, currentTrack } = useCompanionStore()
 
-  // Real-time clock
-  const [time, setTime] = useState(() => {
-    const now = new Date()
-    return { time: now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), date: now.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) }
-  })
+  // Real-time clock - updates every second for smooth clock hands
+  const [now, setNow] = useState<Date | null>(null)
 
   useEffect(() => {
+    // Subscribe to timer updates - setNow in the interval callback is fine
+    // (only the synchronous setNow in the effect body is problematic)
     const interval = setInterval(() => {
-      const now = new Date()
-      setTime({ time: now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), date: now.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) })
-    }, 10000)
+      setNow(new Date())
+    }, 1000)
+    // Set initial time via a microtask to avoid synchronous setState in effect
+    queueMicrotask(() => setNow(new Date()))
     return () => clearInterval(interval)
   }, [])
+
+  const timeStr = now ? now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '--:--'
+  const dateStr = now ? now.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) : ''
+  const hours = now ? now.getHours() : 0
+  const minutes = now ? now.getMinutes() : 0
+  // Clock hand angles
+  const hourAngle = (hours % 12) * 30 + minutes * 0.5
+  const minuteAngle = minutes * 6
 
   const CurrentScreenComponent = screenComponents[currentScreen] || HomeScreen
 
@@ -125,7 +133,36 @@ export default function SmartDisplayFrame() {
           <div className="rounded-2xl bg-[var(--cream)] overflow-hidden flex flex-col" style={{ height: '640px' }}>
             {/* Status bar */}
             <div className="flex-shrink-0 flex items-center justify-between px-5 py-2 bg-[var(--cream-dark)]/60 border-b border-[var(--border)]/50">
-              <span className="text-sm font-medium text-[var(--foreground)]">{time.time}</span>
+              <div className="flex items-center gap-2">
+                {/* Mini analog clock */}
+                <svg width="20" height="20" viewBox="0 0 20 20" className="flex-shrink-0">
+                  <circle cx="10" cy="10" r="9" fill="none" stroke="var(--sage)" strokeWidth="1" opacity="0.4" />
+                  {/* Hour markers */}
+                  {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle) => (
+                    <line
+                      key={angle}
+                      x1="10" y1="2" x2="10" y2="3"
+                      stroke="var(--muted-foreground)" strokeWidth="0.5"
+                      transform={`rotate(${angle} 10 10)`}
+                    />
+                  ))}
+                  {/* Hour hand */}
+                  <line
+                    x1="10" y1="10" x2="10" y2="5"
+                    stroke="var(--foreground)" strokeWidth="1.5" strokeLinecap="round"
+                    transform={`rotate(${hourAngle} 10 10)`}
+                  />
+                  {/* Minute hand */}
+                  <line
+                    x1="10" y1="10" x2="10" y2="3.5"
+                    stroke="var(--sage-dark)" strokeWidth="1" strokeLinecap="round"
+                    transform={`rotate(${minuteAngle} 10 10)`}
+                  />
+                  {/* Center dot */}
+                  <circle cx="10" cy="10" r="1" fill="var(--sage)" />
+                </svg>
+                <span className="text-sm font-medium text-[var(--foreground)] tabular-nums">{timeStr}</span>
+              </div>
               <div className="flex items-center gap-3">
                 {/* Weather icon and temperature */}
                 <div className="flex items-center gap-1">
@@ -145,7 +182,7 @@ export default function SmartDisplayFrame() {
                 {viewMode === 'martha' && !isPlaying && (
                   <span className="text-xs text-[var(--sage)] font-medium">●</span>
                 )}
-                <span className="text-sm text-[var(--muted-foreground)]">{time.date}</span>
+                <span className="text-sm text-[var(--muted-foreground)]">{dateStr}</span>
               </div>
             </div>
 
