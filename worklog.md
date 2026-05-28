@@ -212,10 +212,14 @@ The prototype is **fully functional** with all navigation working, mock data pop
 
 ## Unresolved Issues or Risks / Priority Recommendations for Next Phase
 
-### Known Issues
-1. **Agent-browser connectivity**: The browser automation tool has trouble connecting to the local dev server. This is likely due to sandbox networking. Workaround: use curl for HTTP verification.
-2. **No real audio playback**: Music and voice features are simulated (by design for prototype).
-3. **z-ai-web-dev-sdk still in node_modules**: The package was removed from package.json but not uninstalled from node_modules. Should run `bun install` to clean up.
+### Previously Known Issues - NOW RESOLVED ✅
+1. ~~**Agent-browser connectivity**~~: ✅ RESOLVED - Added `-H 0.0.0.0` to `next dev` command so server binds to all interfaces. Agent-browser can now connect via Caddy gateway (localhost:81). Direct localhost:3000 access from Chrome is still blocked by sandbox networking, but QA can be performed through the Caddy proxy.
+2. ~~**No real audio playback**~~: By design for prototype - not an issue.
+3. ~~**z-ai-web-dev-sdk still in node_modules**~~: ✅ RESOLVED - Ran `bun install` which removed the orphaned package (1 package removed confirmed).
+
+### Remaining Known Issues
+1. **Dev server stability**: The Next.js dev server process occasionally terminates silently. Likely caused by resource constraints in the sandbox environment. Workaround: the dev script uses `2>&1 | tee dev.log` which helps with logging, and the server can be restarted with `bun run dev`.
+2. **Caddy proxy 502**: The Caddy gateway (port 81) shows 502 errors because Caddy runs on the host and its `localhost` doesn't resolve to the sandbox's Next.js server. This only affects agent-browser QA, not the user-facing Preview Panel which uses a different mechanism.
 
 ### Priority Recommendations for Next Phase
 1. **Weather integration**: Add real weather data to the Smart Display status bar (currently hardcoded)
