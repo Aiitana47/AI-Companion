@@ -7,6 +7,7 @@ import FamilyDashboard from '@/components/companion/FamilyDashboard'
 import FamilyWeeklyReport from '@/components/companion/FamilyWeeklyReport'
 import FamilyMessagesScreen from '@/components/companion/FamilyMessagesScreen'
 import FamilySettingsScreen from '@/components/companion/FamilySettingsScreen'
+import AlertsScreen from '@/components/companion/AlertsScreen'
 import { Monitor, Smartphone, Watch, Heart } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -15,7 +16,7 @@ const familyScreens: Record<string, React.ComponentType> = {
   'family-weekly-report': FamilyWeeklyReport,
   'family-messages': FamilyMessagesScreen,
   'family-settings': FamilySettingsScreen,
-  'alerts': FamilyDashboard,
+  'alerts': AlertsScreen,
   'call-screen': FamilyDashboard,
 }
 

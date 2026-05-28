@@ -106,19 +106,19 @@ export default function HomeScreen() {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <button
-              onClick={() => {
-                setShowProactiveBanner(false)
-                setScreen('proactive-suggestion')
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--sage)]/10 border border-[var(--sage)]/20 hover:bg-[var(--sage)]/15 transition-colors text-left"
-            >
+            <div className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--sage)]/10 border border-[var(--sage)]/20">
               <div className="w-8 h-8 rounded-full bg-[var(--sage)]/20 flex items-center justify-center flex-shrink-0">
                 <span className="text-sm">💬</span>
               </div>
-              <p className="flex-1 text-sm text-[var(--sage-dark)] font-medium">
+              <button
+                onClick={() => {
+                  setShowProactiveBanner(false)
+                  setScreen('proactive-suggestion')
+                }}
+                className="flex-1 text-sm text-[var(--sage-dark)] font-medium text-left hover:text-[var(--sage)] transition-colors"
+              >
                 You&apos;ve been quiet for a while. Would you like to chat?
-              </p>
+              </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation()
@@ -129,7 +129,7 @@ export default function HomeScreen() {
               >
                 <X size={14} />
               </button>
-            </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
