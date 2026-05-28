@@ -16,6 +16,9 @@ import CallScreen from './CallScreen'
 import MusicScreen from './MusicScreen'
 import ActivitiesScreen from './ActivitiesScreen'
 import AppointmentsScreen from './AppointmentsScreen'
+import WellnessTipsScreen from './WellnessTipsScreen'
+import SleepTrackerScreen from './SleepTrackerScreen'
+import PhotoGalleryScreen from './PhotoGalleryScreen'
 import CompanionToast from './CompanionToast'
 
 const screenComponents: Record<Screen, React.ComponentType> = {
@@ -33,6 +36,9 @@ const screenComponents: Record<Screen, React.ComponentType> = {
   'music': MusicScreen,
   'activities': ActivitiesScreen,
   'appointments': AppointmentsScreen,
+  'wellness-tips': WellnessTipsScreen,
+  'sleep-tracker': SleepTrackerScreen,
+  'photo-gallery': PhotoGalleryScreen,
   'family-messages': HomeScreen,
   'family-settings': HomeScreen,
 }

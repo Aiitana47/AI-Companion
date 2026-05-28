@@ -21,6 +21,7 @@ export default function HomeScreen() {
   } = useCompanionStore()
 
   const [greeting, setGreeting] = useState(getTimeGreeting(userName))
+  const [showTyping, setShowTyping] = useState(false)
 
   // Update greeting every minute
   useEffect(() => {
@@ -50,7 +51,17 @@ export default function HomeScreen() {
     return () => clearTimeout(timer)
   }, [showToast])
 
-  const handleMicClick = useCallback(async () => {
+  // Simulated AI responses for the prototype (no real AI backend)
+  const simulatedResponses = [
+    "I'm here for you, Martha. How are you feeling today?",
+    "You're doing wonderfully, Martha. Would you like to hear some music?",
+    "It's a lovely day, Martha. Shall I suggest an activity for you?",
+    "I noticed you've been resting. Would you like to call James?",
+    "You're not alone, Martha. I'm always here for a chat.",
+    "Remember to take your medication, Martha. Your health matters.",
+  ]
+
+  const handleMicClick = useCallback(() => {
     // Dismiss any existing chat bubble
     if (aiChatVisible) {
       setAiChatVisible(false)
@@ -61,41 +72,25 @@ export default function HomeScreen() {
     // Start listening state
     setMicState('listening')
 
-    // After 2 seconds, switch to processing
+    // Simulate: listening for 2 seconds, then processing for 1 second
     setTimeout(() => {
       setMicState('processing')
 
-      // Call the API
-      fetch('/api/companion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: 'Hello Martha, how are you feeling today?',
-          context: 'Martha just tapped the mic button on her smart display',
-        }),
-      })
-        .then(res => res.json())
-        .then(data => {
-          setAiChatMessage(data.message || "I'm here for you, Martha. How can I help?")
-          setAiChatVisible(true)
-          setMicState('idle')
+      // Show typing indicator for 0.5s before the message
+      setShowTyping(true)
+      setTimeout(() => {
+        const response = simulatedResponses[Math.floor(Math.random() * simulatedResponses.length)]
+        setAiChatMessage(response)
+        setAiChatVisible(true)
+        setMicState('idle')
+        setShowTyping(false)
 
-          // Auto-dismiss after 8 seconds
-          setTimeout(() => {
-            setAiChatVisible(false)
-            setTimeout(() => setAiChatMessage(null), 300)
-          }, 8000)
-        })
-        .catch(() => {
-          setAiChatMessage("I'm here for you, Martha. Would you like to chat?")
-          setAiChatVisible(true)
-          setMicState('idle')
-
-          setTimeout(() => {
-            setAiChatVisible(false)
-            setTimeout(() => setAiChatMessage(null), 300)
-          }, 8000)
-        })
+        // Auto-dismiss after 8 seconds
+        setTimeout(() => {
+          setAiChatVisible(false)
+          setTimeout(() => setAiChatMessage(null), 300)
+        }, 8000)
+      }, 500)
     }, 2000)
   }, [aiChatVisible, setMicState, setAiChatMessage, setAiChatVisible])
 
@@ -139,28 +134,76 @@ export default function HomeScreen() {
         )}
       </AnimatePresence>
 
-      {/* Greeting */}
-      <motion.h1
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="text-3xl font-bold text-[var(--foreground)] text-center mb-1"
-      >
-        {greeting}
-      </motion.h1>
+      {/* Greeting with online status and weather widget */}
+      <div className="relative">
+        {/* Weather widget - top right */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="absolute -top-1 right-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--cream-dark)]/80 text-sm text-[var(--muted-foreground)]"
+        >
+          <span>☀️</span>
+          <span className="font-medium">18°C</span>
+        </motion.div>
 
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="text-lg text-[var(--muted-foreground)] text-center mb-6"
-      >
-        How can I help you?
-      </motion.p>
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-3xl font-bold text-[var(--foreground)] text-center mb-1"
+        >
+          {greeting}
+        </motion.h1>
 
-      {/* AI Chat bubble */}
+        {/* Online status indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="flex items-center justify-center gap-2 mb-1"
+        >
+          <span className="w-2 h-2 rounded-full bg-[var(--sage)] online-dot" />
+          <span className="text-xs text-[var(--sage)] font-medium">Companion is online</span>
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-lg text-[var(--muted-foreground)] text-center mb-6"
+        >
+          How can I help you?
+        </motion.p>
+      </div>
+
+      {/* AI Chat bubble with typing indicator */}
       <AnimatePresence>
-        {aiChatVisible && aiChatMessage && (
+        {showTyping && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="mb-6"
+          >
+            <div className="bg-[var(--sage)] rounded-2xl p-4 shadow-md relative">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg">🤖</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="typing-dot w-2 h-2 rounded-full bg-white/70 inline-block" />
+                  <span className="typing-dot w-2 h-2 rounded-full bg-white/70 inline-block" />
+                  <span className="typing-dot w-2 h-2 rounded-full bg-white/70 inline-block" />
+                </div>
+              </div>
+              {/* Bubble tail */}
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-[var(--sage)] rotate-45" />
+            </div>
+          </motion.div>
+        )}
+        {aiChatVisible && aiChatMessage && !showTyping && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -184,7 +227,7 @@ export default function HomeScreen() {
         )}
       </AnimatePresence>
 
-      {/* Microphone button with floating animation */}
+      {/* Microphone button with floating animation and breathing glow */}
       <div className="flex-1 flex flex-col items-center justify-center">
         <motion.button
           initial={{ scale: 0.8, opacity: 0 }}
@@ -200,6 +243,7 @@ export default function HomeScreen() {
             w-20 h-20 rounded-full flex items-center justify-center 
             bg-[var(--sage)] hover:bg-[var(--sage-dark)] 
             text-white shadow-lg transition-colors duration-200
+            breathing-glow
             ${micState === 'listening' ? 'mic-pulse' : ''}
           `}
           aria-label={micState === 'listening' ? 'Listening' : micState === 'processing' ? 'Processing' : 'Start listening'}
@@ -253,13 +297,13 @@ export default function HomeScreen() {
         </div>
       </div>
 
-      {/* Emergency button - always visible at bottom */}
+      {/* Emergency button - always visible at bottom, dramatic gradient */}
       <motion.button
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         onClick={activateEmergency}
-        className="emergency-pulse w-full py-4 rounded-2xl bg-[var(--emergency)] hover:bg-[#B04545] text-white font-bold text-xl flex items-center justify-center gap-3 transition-colors mt-2"
+        className="emergency-pulse w-full py-4 rounded-2xl bg-gradient-to-b from-[var(--emergency)] to-[#8B2E2E] hover:from-[#B04545] hover:to-[#6B2020] text-white font-bold text-xl flex items-center justify-center gap-3 transition-colors mt-2 shadow-lg"
         aria-label="Emergency"
         whileTap={{ scale: 0.95 }}
       >

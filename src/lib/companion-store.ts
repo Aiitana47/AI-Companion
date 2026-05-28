@@ -17,6 +17,9 @@ export type Screen =
   | 'appointments'
   | 'family-messages'
   | 'family-settings'
+  | 'wellness-tips'
+  | 'sleep-tracker'
+  | 'photo-gallery'
 
 export type ViewMode = 'martha' | 'james'
 
@@ -388,7 +391,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
 
 // Helper to determine navigation direction for animations
 function getNavigationDirection(_from: Screen, to: Screen): 'forward' | 'backward' {
-  const forwardScreens: Screen[] = ['menu', 'mood-checkin', 'medication-reminder', 'proactive-suggestion', 'profile', 'alerts', 'emergency', 'call-screen', 'family-weekly-report', 'music', 'activities', 'appointments', 'family-messages', 'family-settings']
+  const forwardScreens: Screen[] = ['menu', 'mood-checkin', 'medication-reminder', 'proactive-suggestion', 'profile', 'alerts', 'emergency', 'call-screen', 'family-weekly-report', 'music', 'activities', 'appointments', 'family-messages', 'family-settings', 'wellness-tips', 'sleep-tracker', 'photo-gallery']
   if (forwardScreens.includes(to)) return 'forward'
   return 'backward'
 }

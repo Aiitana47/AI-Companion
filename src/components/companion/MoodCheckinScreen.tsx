@@ -23,15 +23,22 @@ export default function MoodCheckinScreen() {
   const { setMood, goBack, userName, setIsListening, isListening } = useCompanionStore()
   const [selectedMood, setSelectedMood] = useState<MoodType>(null)
   const [showMessage, setShowMessage] = useState(false)
+  const [showTransition, setShowTransition] = useState(false)
 
   const handleMoodSelect = (mood: MoodType) => {
     setSelectedMood(mood)
     setMood(mood)
-    setShowMessage(true)
+    setShowTransition(true)
+
+    // Show transition text briefly, then show full message
+    setTimeout(() => {
+      setShowMessage(true)
+    }, 600)
 
     // Auto-navigate back after 2.5 seconds
     setTimeout(() => {
       setShowMessage(false)
+      setShowTransition(false)
       setSelectedMood(null)
       goBack()
     }, 2500)
@@ -56,33 +63,35 @@ export default function MoodCheckinScreen() {
         <span>Back</span>
       </button>
 
-      {/* Title */}
-      <motion.h2
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-2xl font-bold text-[var(--foreground)] text-center mb-2"
-      >
-        How are you feeling
-      </motion.h2>
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="text-lg text-[var(--muted-foreground)] text-center mb-8"
-      >
-        right now?
-      </motion.p>
+      {/* Title with animated gradient background */}
+      <div className="sage-cream-gradient rounded-2xl p-5 mb-8">
+        <motion.h2
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-2xl font-bold text-[var(--foreground)] text-center mb-2"
+        >
+          How are you feeling
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="text-lg text-[var(--muted-foreground)] text-center"
+        >
+          right now?
+        </motion.p>
+      </div>
 
       <AnimatePresence mode="wait">
         {showMessage ? (
           <motion.div
             key="message"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="flex-1 flex items-center justify-center"
           >
-            <div className="text-center">
+            <div className="text-center spring-bounce">
               <motion.span
                 className="text-6xl block mb-4"
                 initial={{ scale: 0 }}
@@ -95,6 +104,18 @@ export default function MoodCheckinScreen() {
                 {selectedMood ? moodMessages[selectedMood].text : ''}
               </p>
             </div>
+          </motion.div>
+        ) : showTransition ? (
+          <motion.div
+            key="transition"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 flex items-center justify-center"
+          >
+            <p className="text-lg text-[var(--sage)] text-center font-medium">
+              Thank you for sharing 💚
+            </p>
           </motion.div>
         ) : (
           <motion.div
@@ -113,7 +134,7 @@ export default function MoodCheckinScreen() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.08 }}
                   onClick={() => handleMoodSelect(option.mood)}
-                  className={`flex flex-col items-center gap-2 p-5 rounded-2xl min-h-[110px] justify-center transition-all border-2 ${
+                  className={`mood-inner-glow flex flex-col items-center gap-2 p-5 rounded-2xl min-h-[110px] justify-center transition-all border-2 ${
                     selectedMood === option.mood
                       ? 'border-[var(--sage)] bg-[var(--sage)]/15 shadow-md'
                       : `border-transparent ${option.bgColor}`
@@ -128,18 +149,26 @@ export default function MoodCheckinScreen() {
               ))}
             </div>
 
-            {/* Voice option */}
+            {/* Voice option with wave rings */}
             <div className="flex items-center gap-3 text-[var(--muted-foreground)]">
               <span className="text-lg">or just say it</span>
-              <button
-                onClick={handleMicToggle}
-                className={`w-12 h-12 rounded-full flex items-center justify-center bg-[var(--sage)] text-white transition-transform ${
-                  isListening ? 'mic-pulse scale-110' : 'hover:scale-105'
-                }`}
-                aria-label="Say how you feel"
-              >
-                <Mic size={20} />
-              </button>
+              <div className="relative">
+                {isListening && (
+                  <>
+                    <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-[var(--sage)] wave-ring" />
+                    <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-[var(--sage)] wave-ring" style={{ animationDelay: '0.7s' }} />
+                  </>
+                )}
+                <button
+                  onClick={handleMicToggle}
+                  className={`relative w-12 h-12 rounded-full flex items-center justify-center bg-[var(--sage)] text-white transition-transform ${
+                    isListening ? 'mic-pulse scale-110' : 'hover:scale-105'
+                  }`}
+                  aria-label="Say how you feel"
+                >
+                  <Mic size={20} />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

@@ -205,3 +205,106 @@
 .companion-toast {
   border-left: 4px solid var(--sage) !important;
 }
+
+/* Breathing glow for mic button */
+@keyframes breathing-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(143, 174, 139, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(143, 174, 139, 0.25); }
+}
+
+.breathing-glow {
+  animation: breathing-glow 4s ease-in-out infinite;
+}
+
+/* Typing dots animation */
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+
+.typing-dot:nth-child(1) { animation: typing-dot 1.4s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation: typing-dot 1.4s ease-in-out 0.2s infinite; }
+.typing-dot:nth-child(3) { animation: typing-dot 1.4s ease-in-out 0.4s infinite; }
+
+/* Confetti animation */
+@keyframes confetti-rise {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-80px) rotate(360deg); opacity: 0; }
+}
+
+.confetti-dot {
+  animation: confetti-rise 1.5s ease-out forwards;
+}
+
+/* Wave rings animation for mic */
+@keyframes wave-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.wave-ring {
+  animation: wave-ring 2s ease-out infinite;
+}
+
+/* Sage-to-cream animated gradient for mood title */
+@keyframes sage-cream-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.sage-cream-gradient {
+  background: linear-gradient(135deg, rgba(143,174,139,0.08) 0%, rgba(250,246,240,0.15) 50%, rgba(143,174,139,0.08) 100%);
+  background-size: 200% 200%;
+  animation: sage-cream-shift 8s ease-in-out infinite;
+}
+
+/* Spring bounce for mood confirmation */
+@keyframes spring-bounce {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.1); }
+  70% { transform: scale(0.95); }
+  85% { transform: scale(1.03); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.spring-bounce {
+  animation: spring-bounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Online status dot pulse */
+@keyframes online-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.online-dot {
+  animation: online-dot 2s ease-in-out infinite;
+}
+
+/* Card gradient overlay */
+.card-gradient-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-gradient-overlay::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to top, rgba(0,0,0,0.03), transparent);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Hover glow for menu cards */
+.menu-card-glow:hover {
+  box-shadow: 0 0 20px rgba(143, 174, 139, 0.15);
+}
+
+/* Inner glow for mood emoji buttons */
+.mood-inner-glow:hover {
+  box-shadow: inset 0 0 20px rgba(143, 174, 139, 0.12);
+}
