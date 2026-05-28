@@ -21,7 +21,7 @@ export type Screen =
   | 'sleep-tracker'
   | 'photo-gallery'
 
-export type ViewMode = 'martha' | 'james'
+export type ViewMode = 'martha' | 'james' | 'smartwatch'
 
 export type MoodType = 'happy' | 'neutral' | 'sad' | 'angry' | null
 

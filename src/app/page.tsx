@@ -2,11 +2,12 @@
 
 import { useCompanionStore, type ViewMode } from '@/lib/companion-store'
 import SmartDisplayFrame from '@/components/companion/SmartDisplayFrame'
+import SmartWatchFrame from '@/components/companion/SmartWatchFrame'
 import FamilyDashboard from '@/components/companion/FamilyDashboard'
 import FamilyWeeklyReport from '@/components/companion/FamilyWeeklyReport'
 import FamilyMessagesScreen from '@/components/companion/FamilyMessagesScreen'
 import FamilySettingsScreen from '@/components/companion/FamilySettingsScreen'
-import { Monitor, Smartphone, Heart } from 'lucide-react'
+import { Monitor, Smartphone, Watch, Heart } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const familyScreens: Record<string, React.ComponentType> = {
@@ -24,6 +25,7 @@ export default function Home() {
   const viewModes: { mode: ViewMode; label: string; icon: React.ElementType }[] = [
     { mode: 'martha', label: "Martha's Display", icon: Monitor },
     { mode: 'james', label: "James's App", icon: Smartphone },
+    { mode: 'smartwatch', label: "Martha's Watch", icon: Watch },
   ]
 
   const FamilyComponent = familyScreens[currentScreen] || FamilyDashboard
@@ -101,7 +103,9 @@ export default function Home() {
                 )}
                 <Icon size={16} className="relative z-10" />
                 <span className="relative z-10 hidden sm:inline">{vm.label}</span>
-                <span className="relative z-10 sm:hidden">{vm.mode === 'martha' ? 'Martha' : 'James'}</span>
+                <span className="relative z-10 sm:hidden">
+                  {vm.mode === 'martha' ? 'Martha' : vm.mode === 'james' ? 'James' : 'Watch'}
+                </span>
               </button>
             )
           })}
@@ -112,6 +116,16 @@ export default function Home() {
       <main className="flex-1 flex items-start justify-center px-4 pb-8 relative z-10">
         {viewMode === 'martha' ? (
           <SmartDisplayFrame />
+        ) : viewMode === 'smartwatch' ? (
+          <motion.div
+            key="watch-view"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="flex items-start justify-center pt-4"
+          >
+            <SmartWatchFrame />
+          </motion.div>
         ) : (
           <motion.div
             key="james-view"

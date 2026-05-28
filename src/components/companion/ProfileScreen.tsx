@@ -1,7 +1,7 @@
 'use client'
 
 import { useCompanionStore } from '@/lib/companion-store'
-import { ArrowLeft, Phone, Volume2, Sun, Moon, Palette, Shield, Heart } from 'lucide-react'
+import { ArrowLeft, Phone, Volume2, Sun, Palette, Shield, Heart } from 'lucide-react'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 
@@ -9,12 +9,6 @@ export default function ProfileScreen() {
   const { userName, startCall, goBack } = useCompanionStore()
   const [volume, setVolume] = useState(75)
   const [brightness, setBrightness] = useState(80)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode)
-    document.documentElement.classList.toggle('dark')
-  }
 
   return (
     <div className="screen-enter flex flex-col px-6 py-6 min-h-[540px]">
@@ -102,32 +96,6 @@ export default function ProfileScreen() {
 
       {/* Settings */}
       <div className="space-y-4">
-        {/* Dark mode toggle */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="flex items-center justify-between py-2"
-        >
-          <div className="flex items-center gap-2">
-            {isDarkMode ? <Moon size={18} className="text-[var(--sage)]" /> : <Sun size={18} className="text-[var(--warm-orange)]" />}
-            <span className="text-base text-[var(--foreground)]">Dark Mode</span>
-          </div>
-          <button
-            onClick={toggleDarkMode}
-            className={`relative w-14 h-8 rounded-full transition-colors duration-300 ${
-              isDarkMode ? 'bg-[var(--sage)]' : 'bg-[var(--cream-dark)]'
-            }`}
-            aria-label="Toggle dark mode"
-          >
-            <motion.div
-              className="absolute top-1 w-6 h-6 rounded-full bg-white shadow-sm"
-              animate={{ left: isDarkMode ? '30px' : '4px' }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            />
-          </button>
-        </motion.div>
-
         {/* Volume slider */}
         <div>
           <div className="flex items-center gap-2 mb-2">

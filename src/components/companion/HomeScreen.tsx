@@ -135,13 +135,13 @@ export default function HomeScreen() {
       </AnimatePresence>
 
       {/* Greeting with online status and weather widget */}
-      <div className="relative">
-        {/* Weather widget - top right */}
+      <div className="flex flex-col items-center mb-2">
+        {/* Weather widget — inline, above greeting */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="absolute -top-1 right-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--cream-dark)]/80 text-sm text-[var(--muted-foreground)]"
+          className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--cream-dark)]/80 text-sm text-[var(--muted-foreground)] mb-2"
         >
           <span>☀️</span>
           <span className="font-medium">18°C</span>
@@ -171,7 +171,7 @@ export default function HomeScreen() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-lg text-[var(--muted-foreground)] text-center mb-6"
+          className="text-lg text-[var(--muted-foreground)] text-center mb-4"
         >
           How can I help you?
         </motion.p>
